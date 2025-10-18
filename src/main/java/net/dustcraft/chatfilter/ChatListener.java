@@ -88,8 +88,13 @@ public class ChatListener implements Listener {
         // threshold → punish
         int threshold = config.getInt("filter.max_offenses_before_warn", 3);
         if (count >= threshold && config.getBoolean("litebans.integration", false)) {
-            String warnCommand = config.getString("litebans.warn_command")
+            String warnCommand = config.getString("litebans.warn_command", "")
                     .replace("%player%", player.getName());
+
+            if (warnCommand.isEmpty()) {
+                Bukkit.getLogger().warning("[DustCraftChatFilter] litebans.warn_command is missing or empty in config.yml!");
+                return;
+            }
 
             Bukkit.getScheduler().runTask(plugin, () -> 
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), warnCommand)
