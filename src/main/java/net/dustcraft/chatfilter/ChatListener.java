@@ -16,10 +16,10 @@ public class ChatListener implements Listener {
     private final DustCraftChatFilter plugin;
     private FileConfiguration config;
     private final DiscordLogger discordLogger;
+
     private final Map<UUID, Integer> offenseCount = new ConcurrentHashMap<>();
     private final Map<UUID, Long> lastViolation = new ConcurrentHashMap<>();
-
-    private final long cooldownMs;
+    private long cooldownMs; // reloadable
 
     public ChatListener(DustCraftChatFilter plugin, FileConfiguration config, DiscordLogger discordLogger) {
         this.plugin = plugin;
@@ -30,69 +30,77 @@ public class ChatListener implements Listener {
 
     public void reload(FileConfiguration config) {
         this.config = config;
+        this.cooldownMs = config.getLong("filter.cooldown-seconds", 5) * 1000L;
     }
 
     @EventHandler
     public void onChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
 
-        // Bypass check
+        // bypass
         if (player.hasPermission("dustcraftchatfilter.bypass")) return;
 
-        String message = event.getMessage().toLowerCase(Locale.ROOT);
+        String original = event.getMessage();
+        String lower = original.toLowerCase(Locale.ROOT);
         UUID uuid = player.getUniqueId();
 
-        // Cooldown to prevent repeated triggers
+        // cooldown
         if (System.currentTimeMillis() - lastViolation.getOrDefault(uuid, 0L) < cooldownMs) return;
 
-        // Check for banned words
+        // profanity
         List<String> bannedWords = config.getStringList("filter.banned-words");
         for (String word : bannedWords) {
-            if (message.contains(word.toLowerCase(Locale.ROOT))) {
-                handleInfraction(player, "Word: " + word, "profanity");
+            if (lower.contains(word.toLowerCase(Locale.ROOT))) {
+                handleInfraction(player, original, "Word: " + word, "profanity", true, false);
                 event.setCancelled(true);
                 return;
             }
         }
 
-        // Unicode check
-        if (config.getBoolean("filter.unicode-block.enabled", true) && containsUnicode(message)) {
-            handleInfraction(player, "Unicode characters", "unicode");
+        // unicode
+        boolean unicodeEnabled = config.getBoolean("filter.unicode-block.enabled", true);
+        if (unicodeEnabled && containsUnicode(original)) {
+            handleInfraction(player, original, "Unicode characters", "unicode", false, true);
             event.setCancelled(true);
         }
     }
 
-    private void handleInfraction(Player player, String reason, String type) {
+    private void handleInfraction(Player player, String message, String reason, String type,
+                                  boolean profanity, boolean unicode) {
+
         UUID uuid = player.getUniqueId();
         offenseCount.put(uuid, offenseCount.getOrDefault(uuid, 0) + 1);
         lastViolation.put(uuid, System.currentTimeMillis());
-
         int count = offenseCount.get(uuid);
-        int threshold = config.getInt("filter.thresholds." + type, 3);
 
-        // Log to console
-        Bukkit.getLogger().info("[DustCraftChatFilter] " + player.getName() +
-                " triggered chat filter (" + reason + ") - offense #" + count);
+        // player feedback
+        player.sendMessage(ChatColor.RED + "⚠ Your message was blocked by the DustCraft Chat Filter.");
+        player.sendMessage(ChatColor.GRAY + "Please keep chat friendly and appropriate.");
 
-        // Send Discord log
-        if (config.getBoolean("discord-webhook.chat-violations.enabled", true)) {
-            discordLogger.logChatViolation(player, reason, count);
+        // console log
+        Bukkit.getLogger().warning("[DustCraftChatFilter] Blocked message from " + player.getName() + ": " + message);
+
+        // discord log (use the keys that DiscordLogger expects)
+        if (config.getBoolean("discord-webhook.chat.enabled", false)) {
+            discordLogger.logFilteredMessage(player.getName(), message, unicode, profanity);
         }
 
-        // Run LiteBans command if threshold met
+        // threshold → punish
+        int threshold = config.getInt("filter.thresholds." + type, 3);
         if (count >= threshold) {
             String action = config.getString("filter.actions." + type, "warn");
-            String cmd = "/" + action + " " + player.getName() + " " +
-                    config.getString("filter.duration." + type, "14d") +
-                    " Chat violation: " + reason;
+            String duration = config.getString("filter.duration." + type, "14d");
+            String cmd = "/" + action + " " + player.getName() + " " + duration + " Chat violation: " + reason;
+
             Bukkit.getScheduler().runTask(plugin, () ->
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd));
-            offenseCount.put(uuid, 0); // reset after punishment
+
+            offenseCount.put(uuid, 0); // reset after action
         }
     }
 
-    private boolean containsUnicode(String message) {
-        for (char c : message.toCharArray()) {
+    private boolean containsUnicode(String s) {
+        for (char c : s.toCharArray()) {
             if (c > 127 || Character.isISOControl(c)) return true;
         }
         return false;

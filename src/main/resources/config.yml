@@ -14,6 +14,12 @@ filter:
     - badword2
     - slur
     - inappropriatephrase
+    - fuck
+    - fuck you
+    - cum
+    - dickhead
+    - dick head
+    
 
   # Block messages containing Unicode or special symbols (e.g., Zalgo text, hidden characters)
   unicode-block:
@@ -51,9 +57,9 @@ discord-webhook:
   ##########################################################
   # 🚫 Chat Filter Logs
   ##########################################################
-  chat-violations:
+  chat:
     enabled: true
-    url: "https://discord.com/api/webhooks/your-chatfilter-log"
+    url: "...."
 
   ##########################################################
   # 🛡️ Staff Action Logs
