@@ -12,6 +12,24 @@
     <name>DustCraftChatFilter</name>
     <description>Chat filtering plugin for DustCraft Minecraft Community</description>
 
+    <!-- ✅ Add the PaperMC repository so Maven can find paper-api -->
+    <repositories>
+        <repository>
+            <id>papermc-repo</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <!-- Bukkit / Paper API (scope provided so it’s not bundled) -->
+        <dependency>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
+            <version>1.21.10-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <resources>
@@ -32,14 +50,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <dependencies>
-        <!-- Bukkit / Paper API (scope provided so it’s not bundled) -->
-        <dependency>
-            <groupId>io.papermc.paper</groupId>
-            <artifactId>paper-api</artifactId>
-            <version>1.21.1-R0.1-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
 </project>

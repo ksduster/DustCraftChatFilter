@@ -1,0 +1,4 @@
+net\dustcraft\chatfilter\DiscordLogger.class
+net\dustcraft\chatfilter\StaffActionListener.class
+net\dustcraft\chatfilter\ChatListener.class
+net\dustcraft\chatfilter\DustCraftChatFilter.class
