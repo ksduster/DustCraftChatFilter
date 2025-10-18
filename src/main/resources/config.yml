@@ -1,0 +1,108 @@
+############################################################
+# DustCraftChatFilter Configuration
+# Version: 1.0
+# Author: DustCraft Minecraft Community
+############################################################
+
+############################################################
+# 🔠 Chat Filtering
+############################################################
+filter:
+  # Words or phrases to block (case-insensitive)
+  banned-words:
+    - badword1
+    - badword2
+    - slur
+    - inappropriatephrase
+
+  # Block messages containing Unicode or special symbols (e.g., Zalgo text, hidden characters)
+  unicode-block:
+    enabled: true
+
+  # Maximum number of offenses before punishment is triggered
+  thresholds:
+    profanity: 3
+    unicode: 2
+
+  # Cooldown between punishments (seconds)
+  cooldown-seconds: 10
+
+  # Punishment actions and durations
+  actions:
+    profanity: warn
+    unicode: warn
+  duration:
+    profanity: 14d
+    unicode: 14d
+
+
+############################################################
+# ⚖️ LiteBans Integration
+############################################################
+litebans:
+  integration: true
+  warn-command: "warn %player% 14d ChatFilter: repeated inappropriate messages"
+
+
+############################################################
+# 💬 Discord Webhooks
+############################################################
+discord-webhook:
+  ##########################################################
+  # 🚫 Chat Filter Logs
+  ##########################################################
+  chat-violations:
+    enabled: true
+    url: "https://discord.com/api/webhooks/your-chatfilter-log"
+
+  ##########################################################
+  # 🛡️ Staff Action Logs
+  ##########################################################
+  staff-actions:
+    enabled: true
+    url: "https://discord.com/api/webhooks/your-staff-log"
+    tracked-commands:
+      - warn
+      - tempwarn
+      - ban
+      - tempban
+      - mute
+      - tempmute
+      - kick
+      - unban
+      - unmute
+      - unwarn
+
+
+############################################################
+# 🔐 Permissions Reference
+############################################################
+permissions:
+  exempt: dustcraftchatfilter.bypass
+  stafflog: dustcraftchatfilter.stafflog
+  notify: dustcraftchatfilter.notify
+
+
+############################################################
+# 🧩 Plugin Messages & Formatting
+############################################################
+messages:
+  blocked:
+    - "&c⚠ Your message was blocked by the DustCraft Chat Filter."
+    - "&7Please keep chat friendly and appropriate."
+  warned:
+    - "&e⚠ You have been automatically warned for repeated inappropriate chat messages."
+  console-log:
+    blocked: "[DustCraftChatFilter] Blocked message from %player%: %message%"
+    warned: "[DustCraftChatFilter] Issued automatic LiteBans warning for %player%"
+  discord:
+    chat-blocked-title: "🚫 Chat Filter Triggered"
+    chat-warn-title: "⚠️ Automatic Warning Issued"
+    staff-title: "🛡️ Staff Action Executed"
+
+
+############################################################
+# ⚙️ Developer Options
+############################################################
+developer:
+  debug: false

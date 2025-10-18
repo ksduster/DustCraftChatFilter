@@ -1,0 +1,30 @@
+name: DustCraftChatFilter
+main: net.dustcraft.chatfilter.DustCraftChatFilter
+version: 1.0
+api-version: 1.21
+author: DustCraft Minecraft Community
+description: "Automated profanity and Unicode chat filter with LiteBans integration and Discord logging."
+website: "https://dustcraft.serveminecraft.net"
+
+commands:
+  dccf:
+    description: Reloads the DustCraftChatFilter configuration.
+    usage: /dccf reload
+    permission: dustcraftchatfilter.reload
+
+permissions:
+  dustcraftchatfilter.reload:
+    description: Allows reloading of the plugin configuration.
+    default: op
+
+  dustcraftchatfilter.bypass:
+    description: Exempts a player from chat filtering.
+    default: op
+
+  dustcraftchatfilter.stafflog:
+    description: Allows staff moderation actions to be logged to Discord.
+    default: op
+
+  dustcraftchatfilter.notify:
+    description: Shows staff a message when their moderation actions are logged.
+    default: op
