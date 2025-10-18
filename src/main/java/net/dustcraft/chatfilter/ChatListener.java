@@ -86,16 +86,17 @@ public class ChatListener implements Listener {
         }
 
         // threshold → punish
-        int threshold = config.getInt("filter.thresholds." + type, 3);
-        if (count >= threshold) {
-            String action = config.getString("filter.actions." + type, "warn");
-            String duration = config.getString("filter.duration." + type, "14d");
-            String cmd = "/" + action + " " + player.getName() + " " + duration + " Chat violation: " + reason;
+        int threshold = config.getInt("filter.max_offenses_before_warn", 3);
+        if (count >= threshold && config.getBoolean("litebans.integration", false)) {
+            String warnCommand = config.getString("litebans.warn_command")
+                    .replace("%player%", player.getName());
 
-            Bukkit.getScheduler().runTask(plugin, () ->
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd));
+            Bukkit.getScheduler().runTask(plugin, () -> 
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), warnCommand)
+            );
 
-            offenseCount.put(uuid, 0); // reset after action
+            offenseCount.put(uuid, 0); // reset after warn
+            player.sendMessage(ChatColor.YELLOW + "⚠ You have been automatically warned for repeated inappropriate messages.");
         }
     }
 
